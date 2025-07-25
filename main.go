@@ -1,7 +1,13 @@
 package main
 
-import "github.com/gitKashish/learn-go/mocking"
+import (
+	"os"
+	"time"
+
+	"github.com/gitKashish/learn-go/mocking"
+)
 
 func main() {
-	mocking.Countdown()
+	sleeper := mocking.NewConfigurableSleeper(1*time.Second, time.Sleep)
+	mocking.Countdown(os.Stdout, sleeper)
 }
