@@ -94,4 +94,73 @@ func TestWalk(t *testing.T) {
 			}
 		})
 	}
+
+	t.Run("map as input", func(t *testing.T) {
+		input := map[string]string{
+			"Cow": "Moo",
+			"Cat": "Meow",
+		}
+
+		var got []string
+		walk(input, func(input string) {
+			got = append(got, input)
+		})
+
+		for _, val := range input {
+			assertContains(t, got, val)
+		}
+	})
+
+	t.Run("channel as input", func(t *testing.T) {
+		aChannel := make(chan Profile)
+
+		go func() {
+			aChannel <- Profile{33, "Adam"}
+			aChannel <- Profile{32, "Eve"}
+			close(aChannel)
+		}()
+
+		var got []string
+		want := []string{"Adam", "Eve"}
+
+		walk(aChannel, func(input string) {
+			got = append(got, input)
+		})
+
+		if !reflect.DeepEqual(got, want) {
+			t.Errorf("got %v want %v", got, want)
+		}
+	})
+
+	t.Run("func as input", func(t *testing.T) {
+		aFunction := func() (Profile, Profile) {
+			return Profile{22, "Pluto"}, Profile{22, "Pegion"}
+		}
+
+		var got []string
+		want := []string{"Pluto", "Pegion"}
+
+		walk(aFunction, func(input string) {
+			got = append(got, input)
+		})
+
+		if !reflect.DeepEqual(got, want) {
+			t.Errorf("got %v want %v", got, want)
+		}
+	})
+}
+
+func assertContains(t *testing.T, values []string, target string) {
+	t.Helper()
+	contains := false
+	for _, val := range values {
+		if val == target {
+			contains = true
+			break
+		}
+	}
+
+	if !contains {
+		t.Errorf("%v does not contain %s", values, target)
+	}
 }
